@@ -4,102 +4,133 @@
 
 ##### Load Packages and Data ###################################################
 
-# Load packages
+# Load Packages
 library(tidyverse)
 library(haven)
+
+# Note: If you want to clear all of the objects from your global environment,
+# which is like the `clear` command in Stata, remove the next hashtag:
+# rm(list = ls())
 
 # Import Data
 epi_data <- read_dta("2020_Epi753_Lab1.dta")
 
-# Remove extraneous rows at the end of the imported data set
+# Remove Extraneous Rows from Stata Data File
 epi_data <- head(epi_data, 56)
+
+# Avoid Scientific Notation for Comparability to Stata Output
+options(scipen = 9999)
 
 ##### Background ###############################################################
 
 # Summarize Life Expectancy
-# Note: See ?summarize for help file on how to include additional statistics.
+# Note: Type `?summarize` for help file on how to include additional statistics.
 summarize(epi_data, obs = n(),
-                    mean = mean(LifeExpectancy),
-                    sd = sd(LifeExpectancy),
-                    min = min(LifeExpectancy),
-                    max = max(LifeExpectancy))
+    mean = mean(LifeExpectancy),
+    sd = sd(LifeExpectancy),
+    var = var(LifeExpectancy),
+    min = min(LifeExpectancy),
+    max = max(LifeExpectancy))
+
+# Note: With quantile(), you can specify the quantiles to return using the
+# probs argument, as shown here.
+# Note: There are multiple algorithms for calculating quantiles. Below,
+# type = 6 will produce results that are very close to Stata's.
+quantile(epi_data$LifeExpectancy, 
+    probs = c(0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99),
+    type = 6)
 
 # Summarize Median Income
 summarize(epi_data, obs = n(),
-                    mean = mean(MedianIncome),
-                    sd = sd(MedianIncome),
-                    min = min(MedianIncome),
-                    max = max(MedianIncome))
+    mean = mean(MedianIncome),
+    sd = sd(MedianIncome),
+    var = var(MedianIncome),
+    min = min(MedianIncome),
+    max = max(MedianIncome))
+
+quantile(epi_data$MedianIncome, 
+    probs = c(0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99),
+    type = 6)
 
 # View Select Variables
-epi_data2 <- select(epi_data, CommunityStatisticalArea, LifeExpectancy, MedianIncome)
+epi_data2 <- select(epi_data, 
+    CommunityStatisticalArea, 
+    LifeExpectancy, 
+    MedianIncome)
 View(epi_data2)
 
 ##### Question 1 (in-class) ####################################################
 
-# Create a scatter plot with lowess curve of median income and life expectancy
+# Graph of Relationship of Life Expectancy and Income
 g <- ggplot(aes(MedianIncome, LifeExpectancy), data = epi_data)
 
 g + geom_point() +
-    geom_smooth(method = "loess", se = FALSE, col = "orange") +
-    geom_smooth(method = "lm", se = FALSE) +
+    geom_smooth(method = "loess", se = FALSE, col = "blue") +
     labs(title = "Neighborhood Median Income and Life Expectancy in Baltimore",
          x = "Median Income (USD)", 
          y = "Life Expectancy (years)")
 
 ##### Questions 1-2 (at-home) ##################################################
 
-# Model 1
+# Model 1: Income Modeled as Binary Variable
 epi_data <- epi_data %>% mutate(inclt35_bin = ifelse(MedianIncome < 35000, 1, 0))
 summary(lm(LifeExpectancy ~ inclt35_bin, data = epi_data))
 
 ##### Questions 3-4 (at-home) ##################################################
 
-# Model 2
-epi_data$income_ind <- ntile(epi_data$MedianIncome, 5)
+# Model 2: Income Modeled as Disjoint Categorical Variables
 
-epi_data$income_ind <- factor(epi_data$income_ind, levels = 1:5)
+epi_data$income_ind <- cut(epi_data$MedianIncome, 
+    breaks = c(0, 30853, 36569.4, 40618.4, 58243.6, 105000), 
+    labels = c(1, 2, 3, 4, 5))
 
 summary(lm(LifeExpectancy ~ income_ind, data = epi_data))
 
 ##### Question 5 (at-home) #####################################################
 
-# Model 3
-epi_data$income_qt1 <- ntile(epi_data$MedianIncome, 5)
+# Model 3: Income Modeled as an Ordinal Variable with Categorical Scores of 0-4
+epi_data <- epi_data %>% mutate(income_qt1 = 
+    ifelse(income_ind == 1, 1,
+    ifelse(income_ind == 2, 2,
+    ifelse(income_ind == 3, 3,
+    ifelse(income_ind == 4, 4,
+    ifelse(income_ind == 5, 5, NA))))))
 
-m3 <- summary(lm(LifeExpectancy ~ income_qt1, data = epi_data))
+summary(lm(LifeExpectancy ~ income_qt1, data = epi_data))
 
 ##### Question 5 (at-home) #####################################################
 
+# Add a figure to compare regression curves (1)
+
 ##### Question 6-7 (at-home) ###################################################
 
-# Model 4
+# Model 4: Income Modeled as Continuous Variable (untransformed)
 summary(lm(LifeExpectancy ~ MedianIncome, data = epi_data))
 
 ##### Question 8-9 (at-home) ###################################################
 
-# Model 5
+# Model 5: Income Modeled as Continuous Variable (centered and scaled)
 summarize(epi_data, 
     mean = mean(MedianIncome), 
     sd = sd(MedianIncome))
 
 epi_data <- mutate(epi_data, income_c_s = (MedianIncome - 44608) / 20340)
 
-m5 <- summary(lm(LifeExpectancy ~ income_c_s, data = epi_data))
-m5
+summary(lm(LifeExpectancy ~ income_c_s, data = epi_data))
 
 ##### Question 8 (in-class) ####################################################
 
-h <- ggplot(aes(x, y), data = epi_data3)
+# Add a figure to compare regression curves (2)
 
-h + geom_point() 
+##### Reaching Beyond ##########################################################
 
+# Fractional Polynomial Regression (Method 1)
+epi_data <- epi_data %>% mutate(
+    misq   = MedianIncome ^ 2, 
+    micu   = MedianIncome ^ 3, 
+    sqrtmi = MedianIncome ^ 0.5)
 
-+
-    geom_point(aes(x = x, y = y)) +
-    geom_smooth(method = "loess", se = FALSE, col = "orange") +
-    geom_smooth(method = "lm", se = FALSE) +
-    labs(title = "Neighborhood Median Income and Life Expectancy in Baltimore",
-        x = "Median Income (USD)", 
-        y = "Life Expectancy (years)")
+summary(lm(LifeExpectancy ~ MedianIncome + misq + micu + sqrtmi, data = epi_data))
 
+# Fractional Polynomial Regression (Method 2)
+# Note: An equivalent to the `fp` commands in Stata is needed.
