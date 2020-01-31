@@ -1,6 +1,6 @@
 # Use R for Epidemiologic Methods 1-3
 
-This project aims to implement the labs from Epidemiologic Methods 1-3 courses at the Johns Hopkins Bloomberg School of Public Health using R. **Note: This project is not endorsed by anyone, including the course faculty, not even me.** This is an opportunity for students interested in using R to do so and compare the results against what was obtained using Stata.
+This project aims to implement the labs from Epidemiologic Methods 1-3 courses at the Johns Hopkins Bloomberg School of Public Health using R. **Note: This project is not endorsed by course faculty. I do not vouch for any of the code or its output.** This is an opportunity for students interested in using R to do so and compare the results against what was obtained using Stata.
 
 ## Why use R?
 
