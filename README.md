@@ -1,10 +1,10 @@
 # Use R for Epidemiologic Methods 1-3
 
-This project aims to implement the labs from Epidemiologic Methods 1-3 courses at the Johns Hopkins Bloomberg School of Public Health using R. **Note: This project is not endorsed by course faculty. I do not vouch for any of the code or its output.** This is an opportunity for students interested in using R to do so and compare the results against what was obtained using Stata.
+This project aims to implement the labs from the courses Epidemiologic Methods 1-3 offered at the Johns Hopkins Bloomberg School of Public Health using R. **Note: This project is not endorsed by course faculty. I do not vouch for any of the code or its output.** This is just an opportunity for students interested in using R to do so and compare the results against what they obtain using Stata.
 
 ## Why use R?
 
-R is a free and open source alternative to Stata and SAS. It may be harder to learn at first, but ultimately it offers far more flexibility to scientists (in my opinion). It's also free, while Stata and SAS cost much more.
+R is a free and open source alternative to Stata and SAS. It may be harder to learn at first, but ultimately it offers far more flexibility to scientists (in my opinion). It's also free, while Stata is expensive and SAS is just ridiculous.
 
 ## Where can I obtain R?
 
@@ -12,7 +12,15 @@ You can download R from the [Comprehensive R Archive Network (CRAN)](https://cra
 
 ## Where can I learn more about R?
 
-Roger Peng in the Department of Biostatistics teaches a course called Statistical Computing during first term. His slides from the course are available year-round [here](https://rdpeng.github.io/Biostat776/index.html).
+Dr. Roger Peng in the Department of Biostatistics teaches a course called Statistical Computing during first term. His slides from the course are available year-round [here](https://rdpeng.github.io/Biostat776/index.html). Dr. Peng, Dr. Brian Caffo, and Dr. Jeff Leek teach the [Data Science Specialization](https://www.coursera.org/specializations/jhu-data-science) on Coursera. 
+
+Additionally, you can learn R using the `swirl` package in RStudio. In RStudio, type:
+
+```{r}
+install.packages("swirl")
+library(swirl)
+swirl()
+```
 
 ## How do I use this website?
 
