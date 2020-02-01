@@ -27,3 +27,7 @@ swirl()
 GitHub is widely used by developers, but you do not need to know much about it to access the R scripts available on this website. You can navigate the folders above much as you would on your own computer. The scripts are organized by class (e.g., 753) and lab (e.g., Lab 1). 
 
 If you do **not** want to learn more about GitHub, just click on the link to the script, click on the "Raw" button, and save the page (which should look like plain text) using the ".R" extension (e.g., 2020_Epi753_Lab1.R). If you **do** want to learn more about GitHub, see tutorials like [this one](https://guides.github.com/activities/hello-world/).
+
+## Can I contribute to this project? If so, how?
+
+Please do! If you know how to use GitHub, please proceed accordingly: You can fork the repository, edit the code, and suggest changes by issuing a pull request. If you do not use GitHub, or if you would just prefer to do so, you can email me using the address in the Outlook directory.
