@@ -190,7 +190,7 @@ exp(coef(glm(death ~ age10, data = dataset, family = binomial(link = log))))
 # Note: Second, fit an intercept-only model.
 # end <- glm(death ~ 1, data = dataset, family = binomial(link = "log"))
 
-# Note: Finally, we call step() and specify direction = "backward." The stepwise
+# Note: Finally, call step() and specify direction = "backward." The stepwise
 # regression begins with all covariates and moves towards the 
 # intercept-only model.
 # step(start, direction = "backward", scope = formula(end))
