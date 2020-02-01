@@ -1,2 +1,4 @@
-# Stata (.dta) files will be ignored by git to avoid uploading course datasets
+# Ignore Stata (.dta and .do) files
+*.do
 *.dta
+.Rhistory
