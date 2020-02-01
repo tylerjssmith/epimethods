@@ -2,3 +2,4 @@
 *.do
 *.dta
 .Rhistory
+.DS_Store
