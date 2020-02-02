@@ -1,5 +1,8 @@
 # Ignore Stata (.dta and .do) files
+# Note: This ensures course files are not uploaded without permission.
 *.do
 *.dta
+
+# Ignore other files
 .Rhistory
 .DS_Store
