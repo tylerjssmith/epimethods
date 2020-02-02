@@ -15,8 +15,8 @@
 library(tidyverse)
 library(haven)
 library(Epi)
-library(survey)
 library(epiR)
+library(survey)
 
 # Import Data
 dataset <- read_dta("2020_Epi753_Lab3.dta")
@@ -24,7 +24,12 @@ dataset <- read_dta("2020_Epi753_Lab3.dta")
 ######### Questions 2-4 (At-Home)  #############################################
 
 # Table of treatment failure by class of initial ART
-addmargins(table(dataset$pi_regimen, dataset$tx_failure))
+q2m <- addmargins(table(dataset$pi_regimen, dataset$tx_failure))
+q2m
+
+q2m[2,2] / q2m[2,3] # Pr(Tx Failure | PI)
+q2m[1,2] / q2m[1,3] # Pr(Tx Failure | NNRTI)
+# ...and so on.
 
 # Calculate simple odds ratio (similar to `cc` in Stata)
 effx(response = tx_failure, 
@@ -49,7 +54,9 @@ dataset <- dataset %>% mutate(lowCD4 = ifelse(cd4 < 200, 1, 0))
 mx1 <- table(dataset$tx_failure, dataset$pi_regimen, dataset$lowCD4)
 addmargins(mx1)
 
-# Calculate adjusted risk ratio (using glm() for adjustment)
+# Calculate adjusted risk ratio
+# Important: This uses glm() for adjustment. M-H adjustment produces
+# slightly different results.
 effx(response = tx_failure, 
     exposure = pi_regimen,
     control = lowCD4,
@@ -59,8 +66,8 @@ effx(response = tx_failure,
 
 # Calculate adjusted odds ratio (using M-H adjustment)
 # Note: epi.2by2() is slow and returns a 2x2 table with the wrong cell frequencies.
-# However, the odds ratios, confidence intervals, and test of homogeneity match
-# the Stata output.
+# However, due to the invariance of the odds ratio, the OR, confidence intervals, 
+# and test of homogeneity match the Stata output.
 # epi.2by2(mx1, method = "case.control")
 
 # Calculate adjusted risk ratio (using glm() for adjustment)
@@ -72,7 +79,7 @@ effx(response = tx_failure,
     data = dataset)
 
 # Calculate adjusted risk ratio (using M-H adjustment)
-# Note: See above.
+# Note: See above. For the risk ratio, the cell frequencies must be correct.
 
 ######### Questions 6-7 (at-home), Questions 5 (in-class) ######################
 
@@ -153,10 +160,20 @@ exp(coef(glm(tx_failure ~ pi_regimen + cd4 + cd4s + cd4c,
 # Table of initial ART regimen (exposure)
 dataset <- dataset %>% 
     mutate(ge50yrs = ifelse(age >= 50, 1, 0))
-addmargins(table(dataset$tx_failure, dataset$pi_regimen, dataset$ge50yrs))
+q8m <- addmargins(table(dataset$tx_failure, dataset$pi_regimen, dataset$ge50yrs))
+q8m
 
-# Code to calculate RR within strata of age (and get 95% CI)
-# Note: Variable passed to strata argument below must be a factor.
+# Calculate risk of treatment failure in sample
+q8m[5]  / q8m[6]  # Pr(Tx Failure | PI = 1, Age = 18-49)
+q8m[14] / q8m[15] # Pr(Tx Failure | PI = 1, Age = >= 50)
+
+# Calculate risk difference for PI vs NNRTI in sample
+(q8m[5]  / q8m[6])  - 0.628 # Age = 18-49
+(q8m[14] / q8m[15]) - 0.658 # Age >= 50
+
+# Code to calculate RR and OR within strata of age (and get 95% CI)
+# Note: The variable passed to strata argument below must be a factor, so first
+# generate the factor variable ge50yrs_f.
 dataset <- dataset %>% mutate(ge50yrs_f = ge50yrs)
 dataset$ge50yrs_f <- factor(dataset$ge50yrs_f, levels = c(0, 1))
 
@@ -165,6 +182,13 @@ effx(response = tx_failure,
     strata = ge50yrs_f,
     type = "binary", 
     eff = "RR", 
+    data = dataset)
+
+effx(response = tx_failure, 
+    exposure = pi_regimen,
+    strata = ge50yrs_f,
+    type = "binary", 
+    eff = "OR", 
     data = dataset)
 
 ######### Questions 10-11 (At-Home); Question 7 (In-Class) #####################
