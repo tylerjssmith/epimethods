@@ -84,11 +84,11 @@ effx(response = tx_failure,
 ######### Questions 6-7 (at-home), Questions 5 (in-class) ######################
 
 # Linear Model 1
-# Note: This model does use robust variance estimation.
+# Note: This model does not use robust variance estimation.
 summary(lm(tx_failure ~ pi_regimen, data = dataset))
 
 # Linear Model 2
-# Note: This model does use robust variance estimation.
+# Note: This model does not use robust variance estimation.
 summary(lm(tx_failure ~ pi_regimen + lowCD4, data = dataset))
 
 # Log Binomial Model 3
@@ -109,7 +109,7 @@ glm(tx_failure ~ pi_regimen + cd4,
 exp(coef((glm(tx_failure ~ pi_regimen + cd4, 
     family = binomial(link = "log"), data = dataset))))
 
-# Note: This model does use robust variance estimation.
+# Note: This model does not use robust variance estimation.
 glm(tx_failure ~ pi_regimen + cd4, 
     family = poisson(link = "log"), data = dataset)
 exp(coef((glm(tx_failure ~ pi_regimen + cd4, 
@@ -198,7 +198,7 @@ dataset <- dataset %>%
     mutate(pi_ge50 = pi_regimen * ge50yrs)
 
 # Linear Model 11
-# Note: This model does use robust variance estimation.
+# Note: This model does not use robust variance estimation.
 m11 <- lm(tx_failure ~ pi_regimen + ge50yrs + pi_ge50, 
     data = dataset)
 
