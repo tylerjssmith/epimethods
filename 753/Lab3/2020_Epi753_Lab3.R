@@ -1,6 +1,5 @@
 # Known Issues
 # - Need better function for effect measures with M-H adjustment
-# - Need robust variance estimation for regression models
 
 ######### Epidemiologic Methods 3 ##############################################
 
@@ -17,6 +16,8 @@ library(haven)
 library(Epi)
 library(epiR)
 library(survey)
+
+library(sandwich)
 
 # Import Data
 dataset <- read_dta("2020_Epi753_Lab3.dta")
@@ -81,15 +82,43 @@ effx(response = tx_failure,
 # Calculate adjusted risk ratio (using M-H adjustment)
 # Note: See above. For the risk ratio, the cell frequencies must be correct.
 
+######### Define Function `fishy` for Robust Variance Estimation for glm() #####
+
+# Fishy - for robust variance estimation in Poisson models
+fishy <- function(model){
+    ce <- coef(model)
+    se <- sqrt(diag(sandwich(model)))
+    lb <- ce - 1.96 * se
+    ub <- ce + 1.96 * se
+    
+    tb <- round(exp(data.frame(est = ce, lb, ub)), digits = 4)
+    print("Point Estimates and Robust Confidence Intervals")
+    print(tb)
+}
+
+# Eel - for robust variance estimation in linear models
+eel <- function(model){
+    ce <- coef(model)
+    se <- sqrt(diag(sandwich(model)))
+    lb <- ce - 1.96 * se
+    ub <- ce + 1.96 * se
+    
+    tb <- round(data.frame(est = ce, lb, ub), digits = 4)
+    print("Point Estimates and Robust Confidence Intervals")
+    print(tb)
+}
+
 ######### Questions 6-7 (at-home), Questions 5 (in-class) ######################
 
 # Linear Model 1
-# Note: This model does not use robust variance estimation.
-summary(lm(tx_failure ~ pi_regimen, data = dataset))
+m1 <- glm(tx_failure ~ pi_regimen, 
+    family = gaussian(link = identity), data = dataset)
+m1; eel(m1)
 
 # Linear Model 2
-# Note: This model does not use robust variance estimation.
-summary(lm(tx_failure ~ pi_regimen + lowCD4, data = dataset))
+m2 <- glm(tx_failure ~ pi_regimen + lowCD4, 
+    family = gaussian(link = identity), data = dataset)
+m2; eel(m2)
 
 # Log Binomial Model 3
 glm(tx_failure ~ pi_regimen, 
@@ -109,11 +138,10 @@ glm(tx_failure ~ pi_regimen + cd4,
 exp(coef((glm(tx_failure ~ pi_regimen + cd4, 
     family = binomial(link = "log"), data = dataset))))
 
-# Note: This model does not use robust variance estimation.
-glm(tx_failure ~ pi_regimen + cd4, 
+# Alternative: Poisson Model 5 w/ Robust Variances
+m5 <- glm(tx_failure ~ pi_regimen + cd4, 
     family = poisson(link = "log"), data = dataset)
-exp(coef((glm(tx_failure ~ pi_regimen + cd4, 
-    family = poisson(link = "log"), data = dataset))))
+m5; fishy(m5)
 
 # Log Binomial (and Poisson) Model 6
 dataset <- dataset %>% mutate(
@@ -126,10 +154,9 @@ dataset <- dataset %>% mutate(
 # glm(tx_failure ~ pi_regimen + cd4 + cd4s + cd4c, 
 #   family = binomial(link = log), data = dataset)
 
-glm(tx_failure ~ pi_regimen + cd4 + cd4s + cd4c, 
+m6 <- glm(tx_failure ~ pi_regimen + cd4 + cd4s + cd4c, 
     family = poisson(link = "log"), data = dataset)
-exp(coef(glm(tx_failure ~ pi_regimen + cd4 + cd4s + cd4c, 
-    family = poisson(link = "log"), data = dataset)))
+m6; fishy(m6)
 
 # Logistic Model 7
 glm(tx_failure ~ pi_regimen, 
