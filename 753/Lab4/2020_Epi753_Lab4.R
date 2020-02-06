@@ -1,5 +1,4 @@
 # Known Issues
-# - Add ROC curves
 # - Add equivalent to `lsens` and `estat clas` postestimation
 #   commands in Stata
 
@@ -15,6 +14,7 @@
 # Load Packages
 library(tidyverse)
 library(haven)
+library(ROCR)
 library(lattice)
 library(ResourceSelection)
 
@@ -23,6 +23,32 @@ df <- read_dta("2020_Epi753_Lab4.dta")
 
 # Summarize Missing Data
 data.frame(sapply(df, function(x) sum(is.na(x))))
+
+### Define Function rocafella to Generate ROC Plots ############################
+
+# Note: This program uses the ROCR package to plot ROC curves. The plots require
+# several steps, and I have defined a new function called rocafella() to
+# simplify this process.
+
+# Note: Below, assign the results of a logistic regression model to an object,
+# then pass the object to rocafella to obtain the AUC and an ROC curve. For
+# example: m1 <- glm(...); rocafella(m1).
+rocafella <- function(model){
+    ftv <- matrix(model$fitted.values)
+    lab <- matrix(model$y)
+    prb <- prediction(ftv, lab)
+    per <- performance(prb, "tpr", "fpr")
+    auc <- performance(prb, "auc")
+    auc <- paste0("AUC = ", round(auc@y.values[[1]], digits = 4))
+    plot(per, 
+        main = "ROC Curve", 
+        ylab = "Sensitivity", 
+        xlab = "1 - Specificity",
+        sub = auc,
+        lwd = 7)
+    x <- seq(0, 1); y <- seq(0, 1)
+    lines(x, y, lwd = 1)
+}
 
 ### Model 1: Simple Model of the Association between CHD and High DBP ##########
 
@@ -47,6 +73,7 @@ m1 <- glm(inc_chd ~ highDBP, family = binomial(link = logit), data = train)
 summary(m1)
 
 # Create an ROC Curve for a Single Cutoff (DBP > 90)
+rocafella(m1)
 
 ### Model 2: Model of the Association between CHD and BP (Continuous) ##########
 
@@ -60,6 +87,7 @@ m2 <- glm(inc_chd ~ diabp, family = binomial(link = logit), data = train)
 summary(m2)
 
 # Create an ROC Curve
+rocafella(m2)
 
 # Make a Comparison between the ROC Curves
 
@@ -69,16 +97,19 @@ summary(m2)
 m3a <- glm(inc_chd ~ highDBP + age + sex01, 
     family = binomial(link = logit), data = train)
 summary(m3a); hoslem.test(m3a$y, fitted(m3a), g = 10)
+rocafella(m3a)
 
 # Logistic Model 3B
 m3b <- glm(inc_chd ~ highDBP + age + sex01 + totchol, 
     family = binomial(link = logit), data = train)
 summary(m3b); hoslem.test(m3b$y, fitted(m3b), g = 10)
+rocafella(m3b)
 
 # Logistic Model 3C
 m3c <- glm(inc_chd ~ highDBP + age + sex01 + totchol + cursmoke, 
     family = binomial(link = logit), data = train)
 summary(m3c); hoslem.test(m3c$y, fitted(m3c), g = 10)
+rocafella(m3c)
 
 # Logistic Model 3D
 m3d <- glm(inc_chd ~ highDBP + age + sex01 + totchol + bmi, 
@@ -86,11 +117,13 @@ m3d <- glm(inc_chd ~ highDBP + age + sex01 + totchol + bmi,
 # Note: The Hosmer-Lemeshow test of Model 3D obtains slightly different results
 # than Stata's, but the inference is unchanged.
 summary(m3d); hoslem.test(m3d$y, fitted(m3d), g = 10)
+rocafella(m3d)
 
 # Logistic Model 3E
 m3e <- glm(inc_chd ~ highDBP + age + sex01 + totchol + heartrte, 
     family = binomial(link = logit), data = train)
 summary(m3e); hoslem.test(m3e$y, fitted(m3e), g = 10)
+rocafella(m3e)
 
 ### Question 5 (In-Class): Test Prediction Model ###############################
 
