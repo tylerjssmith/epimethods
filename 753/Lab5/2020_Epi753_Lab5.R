@@ -19,19 +19,23 @@ data.frame(sapply(df, function(x) sum(is.na(x))))
 
 ### Analysis 1: Time from Enrollment ###########################################
 
+# Entry, Exit, and Follow-up Time
 df <- df %>% mutate(entry1 = 0)
 df <- df %>% mutate(exit1 = lastyear - enrollyear)
 df <- df %>% mutate(fup1 = exit1 - entry1)
 
+# Summarize
 sum(df$fup1)
 sum(df$statusatlast)
 
 ### Analysis 2: Time from Age 18 ###############################################
 
+# Entry, Exit, and Follow-up Time
 df <- df %>% mutate(entry2 = enrollyear - age18year)
 df <- df %>% mutate(exit2 = lastyear - age18year)
 df <- df %>% mutate(fup2 = exit2 - entry2)
 
+# Summarize
 sum(df$fup2)
 sum(df$statusatlast)
 
@@ -64,10 +68,11 @@ df %>%
 
 ### Analysis 5 (In-Class): Incorrect Risk Set Alignment ########################
 
+# Entry, Exit, and Follow-up Time
 df <- df %>% mutate(entry5 = ifelse(artyear < 2100, 0, NA))
 df <- df %>% mutate(exit5 = 
-        ifelse(artyear < 2100 & artyear <= enrollyear, lastyear - enrollyear,
-        ifelse(artyear < 2100 & artyear >  enrollyear, lastyear - artyear, NA)))
+    ifelse(artyear < 2100 & artyear <= enrollyear, lastyear - enrollyear,
+    ifelse(artyear < 2100 & artyear >  enrollyear, lastyear - artyear, NA)))
 df <- df %>% mutate(fup5 = ifelse(artyear < 2100, exit5 - entry5, NA))
 
 # Summarize    
@@ -77,6 +82,7 @@ df %>%
 
 ### Question 7C (In-Class) #####################################################
 
+# Kaplan-Meier Plot of Analysis 3
 png(filename = "analysis3.png")
 ggsurvplot(
     fit = survfit(Surv(fup3, statusatlast) ~ 1, data = df),
@@ -85,6 +91,7 @@ ggsurvplot(
     ylab = "Survival")
 dev.off()
 
+# Kaplan-Meier Plot of Analysis 5
 png(filename = "analysis5.png")   
 ggsurvplot(
     fit = survfit(Surv(fup5, statusatlast) ~ 1, data = df),
